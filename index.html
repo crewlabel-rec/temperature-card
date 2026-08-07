@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>크루레이블 · 온도 카드</title>
+<style>
+  @font-face{
+    font-family:"GmarketSans"; font-weight:700; font-style:normal;
+    src:url("font/GmarketSansTTFBold.ttf") format("truetype");
+  }
+  @font-face{
+    font-family:"GmarketSans"; font-weight:500; font-style:normal;
+    src:url("font/GmarketSansTTFMedium.ttf") format("truetype");
+  }
+  @font-face{
+    font-family:"GmarketSans"; font-weight:300; font-style:normal;
+    src:url("font/GmarketSansTTFLight.ttf") format("truetype");
+  }
+
+  :root{
+    --bg:#0a0a0c; --bg2:#050506;
+    --card:#16171b; --card-line:#26282e;
+    --orange:#e08a3c; --orange-soft:#c9762c; --orange-dim:#7a5228;
+    --text:#f3f1ec; --text-sub:#9a9ca3; --text-muted:#5f6169;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none;}
+  html,body{margin:0; padding:0;
+    background:radial-gradient(ellipse at 50% -10%, #1c1d22 0%, var(--bg) 45%, var(--bg2) 100%);
+    color:var(--text); font-family:"GmarketSans",-apple-system,BlinkMacSystemFont,"Malgun Gothic","맑은 고딕",sans-serif;
+    min-height:100vh; overflow-x:hidden;}
+
+  .page{min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    justify-content:center; padding:26px 16px 40px; gap:18px;}
+
+  /* ── 진행자 설정 바 ── */
+  .admin{width:100%; max-width:520px; background:var(--card); border:1px solid var(--card-line);
+    border-radius:16px; padding:16px 18px; }
+  .admin-row{display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .admin-field{display:flex; align-items:center; gap:8px;}
+  .admin-field label{font-size:12px; color:var(--text-muted); font-weight:500;}
+  .admin input[type=text]{background:transparent; border:none; border-bottom:1px solid var(--card-line);
+    color:var(--text); font-family:inherit; font-weight:500; font-size:14px; padding:4px 2px; width:100px;}
+  .admin input[type=text]:focus{outline:none; border-bottom-color:var(--orange);}
+  .admin select{background:transparent; border:none; border-bottom:1px solid var(--card-line);
+    color:var(--text); font-family:inherit; font-weight:500; font-size:14px; padding:4px 2px;}
+  .admin select:focus{outline:none; border-bottom-color:var(--orange);}
+  .lock-btn{margin-left:auto; background:transparent; border:1px solid var(--orange-soft); color:var(--orange);
+    font-family:inherit; font-weight:700; font-size:13px; padding:8px 14px; border-radius:10px; cursor:pointer;
+    letter-spacing:.3px; white-space:nowrap;}
+  .lock-btn.locked{border-color:var(--card-line); color:var(--text-muted); background:rgba(255,255,255,.03);}
+  .admin-note{font-size:11.5px; color:var(--text-muted); margin-top:10px; line-height:1.6; font-weight:300;}
+  .admin.disabled input, .admin.disabled select{opacity:.45; pointer-events:none;}
+
+  /* ── 카드 ── */
+  .card{width:100%; max-width:520px; background:var(--card); border:1px solid var(--card-line);
+    border-radius:20px; padding:36px 30px 32px; text-align:center;
+    box-shadow:0 20px 44px rgba(0,0,0,.4);}
+  .logo{height:26px; margin:0 auto 22px; display:block;}
+  .title{font-size:24px; font-weight:700; margin:0 0 8px;}
+  .anon{font-size:13px; color:var(--text-muted); font-weight:300; margin-bottom:30px;}
+  .anon::before{content:"이름은 남지 않아요 · 익명";}
+  .q{font-size:15px; font-weight:500; color:var(--text); margin-bottom:16px;}
+
+  .temps{display:flex; justify-content:center; gap:10px; margin-bottom:28px;}
+  .temp{width:60px; height:70px; border-radius:14px; border:1.5px solid var(--card-line);
+    background:rgba(255,255,255,.02); display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:6px; cursor:pointer; transition:border-color .15s, background .15s, transform .1s;}
+  .temp .emoji{font-size:24px; line-height:1;}
+  .temp .num{font-size:11px; color:var(--text-muted); font-weight:500;}
+  .temp:active{transform:scale(.96);}
+  .temp.selected{border-color:var(--orange); background:rgba(224,138,60,.12);}
+  .temp.selected .num{color:var(--orange);}
+
+  .msg-label{text-align:left; font-size:13px; font-weight:500; color:var(--text-sub); margin-bottom:8px;}
+  textarea{width:100%; min-height:70px; background:rgba(255,255,255,.02); border:1px solid var(--card-line);
+    border-radius:12px; color:var(--text); font-family:inherit; font-weight:300; font-size:14px;
+    padding:12px 14px; resize:none; margin-bottom:26px;}
+  textarea::placeholder{color:var(--text-muted); font-weight:300;}
+  textarea:focus{outline:none; border-color:var(--orange-dim);}
+
+  .submit{width:100%; padding:16px; border-radius:14px; border:none; background:var(--orange);
+    color:#1a1206; font-family:inherit; font-weight:700; font-size:15px; letter-spacing:.3px; cursor:pointer;
+    transition:opacity .15s, transform .1s;}
+  .submit:active{transform:scale(.98);}
+  .submit:disabled{opacity:.35; cursor:default;}
+  .warn{font-size:12px; color:var(--orange-soft); font-weight:500; margin-top:10px; height:14px;}
+
+  /* ── 완료 화면 ── */
+  .done{display:none; flex-direction:column; align-items:center; padding:26px 10px 6px;}
+  .done .check{font-size:44px; margin-bottom:14px;}
+  .done .h{font-size:18px; font-weight:700; margin-bottom:8px;}
+  .done .s{font-size:13.5px; color:var(--text-sub); font-weight:300; line-height:1.7;}
+  .again{margin-top:26px; background:transparent; border:1px solid var(--card-line); color:var(--text-sub);
+    font-family:inherit; font-weight:500; font-size:13px; padding:10px 18px; border-radius:10px; cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="admin" id="admin">
+    <div class="admin-row">
+      <div class="admin-field">
+        <label>팀명</label>
+        <input type="text" id="teamName" placeholder="예: 1기 1팀">
+      </div>
+      <div class="admin-field">
+        <label>주차</label>
+        <select id="weekSel">
+          <option value="1주차">1주차</option>
+          <option value="2주차">2주차</option>
+          <option value="3주차">3주차</option>
+          <option value="4주차">4주차</option>
+        </select>
+      </div>
+      <button class="lock-btn" id="lockBtn" onclick="toggleLock()">설정 완료</button>
+    </div>
+    <div class="admin-note">진행자가 세션 시작 전에 한 번만 설정하세요. 출연자에게는 이 줄이 잠깁니다.</div>
+  </div>
+
+  <div class="card" id="formCard">
+    <img class="logo" src="images/crew label logo white text.png.png" alt="CREW LABEL">
+    <div class="title">오늘의 온도카드</div>
+    <div class="anon"></div>
+
+    <div class="q">오늘 이 시간, 몇 도였나요?</div>
+    <div class="temps" id="temps">
+      <div class="temp" data-v="1"><div class="emoji">🥶</div><div class="num">1</div></div>
+      <div class="temp" data-v="2"><div class="emoji">😐</div><div class="num">2</div></div>
+      <div class="temp" data-v="3"><div class="emoji">🙂</div><div class="num">3</div></div>
+      <div class="temp" data-v="4"><div class="emoji">😄</div><div class="num">4</div></div>
+      <div class="temp" data-v="5"><div class="emoji">🔥</div><div class="num">5</div></div>
+    </div>
+
+    <div class="msg-label">하고 싶은 말이 있다면 (선택)</div>
+    <textarea id="msgInput" placeholder="안 써도 되고, 한 줄만 남겨도 돼요"></textarea>
+
+    <button class="submit" id="submitBtn" onclick="submitCard()">제출하기</button>
+    <div class="warn" id="warnMsg"></div>
+  </div>
+
+  <div class="card done" id="doneCard">
+    <div class="check">✅</div>
+    <div class="h">잘 전달됐어요</div>
+    <div class="s">오늘도 고생하셨어요<br>다음 분에게 넘겨주세요 🙂</div>
+    <button class="again" onclick="resetForm()">다음 사람 작성하기</button>
+  </div>
+
+</div>
+
+<script>
+let selectedTemp = null;
+
+document.querySelectorAll('.temp').forEach(el=>{
+  el.addEventListener('click', ()=>{
+    document.querySelectorAll('.temp').forEach(t=>t.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedTemp = el.dataset.v;
+    document.getElementById('warnMsg').textContent = '';
+  });
+});
+
+function toggleLock(){
+  const admin = document.getElementById('admin');
+  const btn = document.getElementById('lockBtn');
+  const locked = btn.classList.contains('locked');
+  if(locked){
+    btn.classList.remove('locked');
+    btn.textContent = '설정 완료';
+    admin.classList.remove('disabled');
+  }else{
+    btn.classList.add('locked');
+    btn.textContent = '설정됨 ✓';
+    admin.classList.add('disabled');
+  }
+}
+
+function submitCard(){
+  if(!selectedTemp){
+    document.getElementById('warnMsg').textContent = '온도를 먼저 선택해 주세요';
+    return;
+  }
+  // TODO: 구글 시트 웹훅 연동 예정 — 완료 후 아래에 fetch 호출 추가
+  // const payload = {
+  //   teamName: document.getElementById('teamName').value || '(미설정)',
+  //   week: document.getElementById('weekSel').value,
+  //   temp: selectedTemp,
+  //   message: document.getElementById('msgInput').value
+  // };
+
+  document.getElementById('formCard').style.display = 'none';
+  document.getElementById('doneCard').style.display = 'flex';
+}
+
+function resetForm(){
+  selectedTemp = null;
+  document.querySelectorAll('.temp').forEach(t=>t.classList.remove('selected'));
+  document.getElementById('msgInput').value = '';
+  document.getElementById('warnMsg').textContent = '';
+  document.getElementById('doneCard').style.display = 'none';
+  document.getElementById('formCard').style.display = 'block';
+}
+</script>
+</body>
+</html>
