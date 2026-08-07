@@ -32,6 +32,7 @@
 
   .page{min-height:100vh; display:flex; flex-direction:column; align-items:center;
     justify-content:center; padding:26px 16px 40px; gap:18px;}
+  .page-logo{height:64px; margin-bottom:4px; display:block;}
 
   /* ── 진행자 설정 바 ── */
   .admin{width:100%; max-width:520px; background:var(--card); border:1px solid var(--card-line);
@@ -56,7 +57,7 @@
   .card{width:100%; max-width:520px; background:var(--card); border:1px solid var(--card-line);
     border-radius:20px; padding:36px 30px 32px; text-align:center;
     box-shadow:0 20px 44px rgba(0,0,0,.4);}
-  .logo{height:52px; margin:0 auto 26px; display:block;}
+  .logo{display:none;}
   .title{font-size:24px; font-weight:700; margin:0 0 8px;}
   .anon{font-size:14.5px; color:var(--text-sub); font-weight:300; margin-bottom:30px;}
   .anon::before{content:"이름은 남지 않아요 · 익명";}
@@ -97,6 +98,7 @@
 </head>
 <body>
 <div class="page">
+  <img class="page-logo" src="images/crew label logo white text.png.png" alt="CREW LABEL">
 
   <div class="admin" id="admin">
     <div class="admin-row">
@@ -119,7 +121,6 @@
   </div>
 
   <div class="card" id="formCard">
-    <img class="logo" src="images/crew label logo white text.png.png" alt="CREW LABEL">
     <div class="title">오늘의 온도카드</div>
     <div class="anon"></div>
 
