@@ -4,6 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>크루레이블 · 온도 카드</title>
+
+<!-- PWA: 홈 화면 아이콘 + 전체화면(가로) 실행 -->
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="theme-color" content="#0a0a0c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="온도카드">
+<meta name="mobile-web-app-capable" content="yes">
 <style>
   @font-face{
     font-family:"GmarketSans"; font-weight:700; font-style:normal;
@@ -95,9 +105,22 @@
   .done .s{font-size:13.5px; color:var(--text-sub); font-weight:300; line-height:1.7;}
   .again{margin-top:26px; background:transparent; border:1px solid var(--card-line); color:var(--text-sub);
     font-family:inherit; font-weight:500; font-size:13px; padding:10px 18px; border-radius:10px; cursor:pointer;}
+
+  .fs-btn{position:fixed; top:14px; right:14px; width:38px; height:38px; border-radius:10px;
+    background:rgba(22,23,27,.6); border:1px solid var(--card-line); color:var(--orange);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:200;
+    backdrop-filter:blur(2px); transition:opacity .2s;}
+  .fs-btn svg{width:18px; height:18px;}
+  .fs-btn.hide{display:none;}
 </style>
 </head>
 <body>
+<button class="fs-btn" id="fsBtn" onclick="toggleFullscreen()" aria-label="전체화면">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
+    <path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+  </svg>
+</button>
 <div class="page">
   <img class="page-logo" src="images/crew label logo white text.png.png" alt="CREW LABEL">
 
@@ -202,6 +225,49 @@ function resetForm(){
   document.getElementById('doneCard').style.display = 'none';
   document.getElementById('formCard').style.display = 'block';
 }
+
+/* ── 전체화면 + 가로 고정 ── */
+function isFullscreen(){
+  return !!(document.fullscreenElement || document.webkitFullscreenElement);
+}
+function lockLandscape(){
+  if(screen.orientation && screen.orientation.lock){
+    screen.orientation.lock('landscape').catch(()=>{});
+  }
+}
+function requestFS(){
+  const el = document.documentElement;
+  const req = el.requestFullscreen || el.webkitRequestFullscreen;
+  if(req){ return req.call(el).catch ? req.call(el) : Promise.resolve(req.call(el)); }
+  return Promise.reject();
+}
+function exitFS(){
+  const exit = document.exitFullscreen || document.webkitExitFullscreen;
+  if(exit){ exit.call(document); }
+}
+function toggleFullscreen(){
+  if(isFullscreen()){ exitFS(); }
+  else{
+    Promise.resolve(requestFS()).then(lockLandscape).catch(()=>{ lockLandscape(); });
+  }
+}
+function updateFsBtn(){
+  const btn = document.getElementById('fsBtn');
+  if(!btn) return;
+  btn.classList.toggle('hide', isFullscreen());
+}
+document.addEventListener('fullscreenchange', ()=>{ updateFsBtn(); if(isFullscreen()) lockLandscape(); });
+document.addEventListener('webkitfullscreenchange', updateFsBtn);
+
+window.addEventListener('load', ()=>{
+  const standalone = window.matchMedia('(display-mode: standalone)').matches ||
+                      window.matchMedia('(display-mode: fullscreen)').matches ||
+                      window.navigator.standalone === true;
+  if(standalone){
+    Promise.resolve(requestFS()).then(lockLandscape).catch(()=>{ lockLandscape(); });
+  }
+  updateFsBtn();
+});
 </script>
 </body>
 </html>
