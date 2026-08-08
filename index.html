@@ -200,18 +200,26 @@ function toggleLock(){
   }
 }
 
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwBcvbteeZU6TuxcLTLbxuq-DTDCPOaC627225PCmBqvS0rj-QAvM63sGdlcyvE6YBJ/exec';
+
 function submitCard(){
   if(!selectedTemp){
     document.getElementById('warnMsg').textContent = '온도를 먼저 선택해 주세요';
     return;
   }
-  // TODO: 구글 시트 웹훅 연동 예정 — 완료 후 아래에 fetch 호출 추가
-  // const payload = {
-  //   teamName: document.getElementById('teamName').value || '(미설정)',
-  //   week: document.getElementById('weekSel').value,
-  //   temp: selectedTemp,
-  //   message: document.getElementById('msgInput').value
-  // };
+  const payload = {
+    teamName: document.getElementById('teamName').value || '(미설정)',
+    week: document.getElementById('weekSel').value,
+    temp: selectedTemp,
+    message: document.getElementById('msgInput').value
+  };
+
+  fetch(WEBHOOK_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  }).catch(()=>{ /* no-cors 모드라 응답을 읽을 수 없어 에러는 무시 */ });
 
   document.getElementById('formCard').style.display = 'none';
   document.getElementById('doneCard').style.display = 'flex';
